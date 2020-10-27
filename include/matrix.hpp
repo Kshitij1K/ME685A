@@ -126,4 +126,16 @@ template<class m_type> class Matrix {
 
         return result;
     }
+
+    Matrix<m_type> operator*(m_type scalar) {
+        Matrix<m_type> result(rows, columns);
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                result[i][j] = data[i][j]*scalar;
+            }
+        }
+
+        return result;
+    }
 };
