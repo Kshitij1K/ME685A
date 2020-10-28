@@ -1,9 +1,8 @@
 #pragma once
 
 #include <iostream>
-
 template<class m_type> class Matrix {
-  private:
+  protected:
     long int rows = 0;
     long int columns = 0;
     m_type** data;
@@ -12,7 +11,15 @@ template<class m_type> class Matrix {
     Matrix()
         : data(NULL){};
 
-    ~Matrix(){};
+    ~Matrix(){
+        // if (rows !=0) {
+        //     for (long int i = 0; i < rows; i++) {
+        //         delete data[i];
+        //     }
+
+        //     delete data;
+        // }
+    };
 
     Matrix(long int rows, long int columns) {
         this->rows = rows;
@@ -97,7 +104,7 @@ template<class m_type> class Matrix {
 
     Matrix<m_type> operator*(Matrix<m_type>& A) {
         if (this->columns != A.numrows()) {
-            std::out_of_range e("The dimensions of the matrix do not match, while multiplication. Aborting.");
+            std::invalid_argument e("The dimensions of the matrix do not match, while multiplication. Aborting.");
             throw e;
         }
 
@@ -113,6 +120,32 @@ template<class m_type> class Matrix {
         }
 
         return result;
+    }
+
+    Matrix<m_type> operator/(Matrix<m_type>& A) {
+        return (*this) * (A.inverse());
+    }
+
+    void operator=(Matrix<m_type> A) {
+        if (rows != 0) {
+            for (long int i = 0; i < rows; i++) {
+                delete[] data[i];
+            }
+
+            delete[] data;
+        }
+
+        rows = A.numrows();
+        columns = A.numcols();
+
+        data = new m_type*[rows];
+
+        for (long int i = 0; i < rows; i++) {
+            data[i] = new m_type[columns];
+            for (long int j = 0; j < columns; j++) {
+                data[i][j] = A[i][j];
+            }
+        }
     }
 
     Matrix<m_type> transpose() {
@@ -132,10 +165,106 @@ template<class m_type> class Matrix {
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
-                result[i][j] = data[i][j]*scalar;
+                result[i][j] = data[i][j] * scalar;
             }
         }
 
         return result;
+    }
+
+    static Matrix<m_type> identity(long int numrows) {
+        Matrix<m_type> result(numrows, numrows);
+        for (int i = 0; i < numrows; i++) {
+            for (int j = 0; j < numrows; j++) {
+                result[i][j] = (i == j) ? 1 : 0;
+            }
+        }
+        return result;
+    }
+
+    Matrix<m_type> gjinverse() {
+        if (rows != columns) {
+            std::invalid_argument e("Matrix is not square, cannot calculate inverse. Aborting.");
+            throw e;
+        }
+        Matrix<m_type> result = Matrix<m_type>::identity(rows);
+        Matrix<m_type> copy = (*this);
+
+        for (long int i = 0; i < (rows - 1); i++) {
+            for (long int j = i + 1; j < rows; j++) {
+                if (copy[i][i] == 0) {
+                    std::invalid_argument e("Matrix is non-invertible. Aborting.");
+                    throw e;
+                }
+                m_type factor = -copy[j][i] / copy[i][i];
+                for (long int k = 0; k < rows; k++) {
+                    copy[j][k] += factor * copy[i][k];
+                    result[j][k] += factor * result[i][k];
+                }
+            }
+        }
+
+        for (long int i = rows - 1; i > 0; i--) {
+            for (long int j = i - 1; j >= 0; j--) {
+                if (copy[i][i] == 0) {
+                    std::invalid_argument e("Matrix is non-invertible. Aborting.");
+                    throw e;
+                }                
+                m_type factor = -copy[j][i] / copy[i][i];
+                for (long int k = 0; k < rows; k++) {
+                    copy[j][k] += factor * copy[i][k];
+                    result[j][k] += factor * result[i][k];
+                }
+            }
+        }
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < rows; j++) {
+                result[i][j] /= copy[i][i];
+            }
+        }
+
+        return result;
+    }
+
+    m_type det() {
+        if (rows != columns) {
+            std::invalid_argument e("Matrix is not square, cannot calculate determinant. Aborting.");
+            throw e;
+        }
+        Matrix<m_type> copy = (*this);
+
+        for (long int i = 0; i < (rows - 1); i++) {
+            for (long int j = i + 1; j < rows; j++) {
+                if (copy[i][i] == 0) {
+                    std::invalid_argument e("Matrix is singular. Aborting.");
+                    throw e;
+                }
+                m_type factor = -copy[j][i] / copy[i][i];
+                for (long int k = i; k < rows; k++) {
+                    copy[j][k] += factor * copy[i][k];
+                }
+            }
+        }
+
+        m_type result = 1;
+
+        for (long int i = rows - 1; i > 0; i--) {
+            for (long int j = i - 1; j >= 0; j--) {
+                m_type factor = -copy[j][i] / copy[i][i];
+
+                if (copy[i][i] == 0) {
+                    std::invalid_argument e("Matrix is singular. Aborting.");
+                    throw e;
+                }
+
+                for (long int k = i; k < rows; k++) {
+                    copy[j][k] += factor * copy[i][k];
+                }
+            }
+            result *= copy[i][i];
+        }
+
+        return result * copy[0][0];
     }
 };

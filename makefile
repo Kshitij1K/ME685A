@@ -3,5 +3,5 @@ main: main.o
 	g++ $^ -o $@
 	mv *.o build/
 
-main.o: main.cpp include/matrix.hpp
+main.o: main.cpp include/matrix.hpp include/vector.hpp
 	g++ -Iinclude -c main.cpp
