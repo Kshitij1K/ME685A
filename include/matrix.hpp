@@ -134,15 +134,15 @@ template<class m_type> class Matrix {
         }
     }
 
-    Matrix<m_type> operator-() {
+    Matrix<m_type> operator- () {
         Matrix<m_type> result(rows, columns);
 
         for (long int i = 0; i < rows; i++) {
             for (long int j = 0; j < columns; j++) {
-                result[i][j] = data[i][j] * -1;
+                result[i][j] = data[i][j] * (-1);
             }
         }
-
+        result.print();
         return result;        
     }
 

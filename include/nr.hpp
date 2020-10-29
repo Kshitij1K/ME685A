@@ -1,7 +1,7 @@
 #include <unistd.h>
 template<class f_typ, class d_type> class NR {
   protected:
-    f_typ convergence;
+    bool (*convergence)(f_typ current);
     f_typ (*function)(f_typ var);
     d_type (*derivative)(f_typ var);
 
@@ -21,27 +21,12 @@ template<class f_typ, class d_type> class NR {
         std::cout << derivative(var) << std::endl;
     }
 
-    void setConvergence(f_typ convergence) {
+    void setConvergence(bool (*convergence)(f_typ current)) {
         this->convergence = convergence;
     }
 
     f_typ root(f_typ initial) {
-        while (function(initial) > convergence || function(initial) < (-convergence)) {
-            // derivative(initial).gjinverse().print();
-            // f_typ error = (derivative(initial).gjinverse())*function(initial);
-            d_type ddx = derivative(initial);
-            f_typ fx = function(initial);
-            d_type error = fx/ddx;
-            // (myass*myass2).print();;
-            error.print();
-            initial.print();
-            std::cout << std::endl;
-            // error.print();
-            // f_typ k = (initial - error);
-            // sleep(2);
-            break;
-            // break;
-        }
+        while (!convergence(function(initial))) initial = (initial - (function(initial)/derivative(initial)));
 
         return initial;
     }

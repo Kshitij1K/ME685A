@@ -22,10 +22,18 @@ template<class v_type> class Vector : public Matrix<v_type> {
         }
     }
 
-    Vector(long int row) : rows(row), columns(1){
-        data.resize(row);
-        for (long int i = 0; i < row; i++)
-            this->data[i].resize(1);
+    Vector(long int row) : Matrix<v_type> (row, 1){}
+
+    void operator=(Vector<v_type> A) {
+        this->rows = A.numrows();
+        this->columns = 1;
+
+        this->data.resize(this->rows);
+
+        for (long int i = 0; i < this->rows; i++) {
+            this->data[i].resize(this->columns);
+            this->data[i][0] = A[i][0];
+        }
     }
 
     Vector(Matrix<v_type> M) {
@@ -35,6 +43,9 @@ template<class v_type> class Vector : public Matrix<v_type> {
         }
 
         this->rows = M.numrows();
+        this->columns = 1;
+
+        this->data.resize(this->rows);
         for (long int i = 0; i < this->rows; i++) {
             this->data[i].resize(1);
             this->data[i][0] = M[i][0];
@@ -59,13 +70,5 @@ template<class v_type> class Vector : public Matrix<v_type> {
     void set_sqrt(v_type (*sqrootfun)(v_type var)) {
         sqroot = sqrootfun;
         use_custom_sqrt = true;
-    }
-
-    bool operator>(Vector<v_type> A) {
-        return this->norm() > A.norm();
-    }
-
-    bool operator<(Vector<v_type> A) {
-        return this->norm() < A.norm();
     }
 };
