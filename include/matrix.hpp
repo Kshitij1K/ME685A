@@ -1,44 +1,38 @@
 #pragma once
 
 #include <iostream>
+#include <vector>
+
 template<class m_type> class Matrix {
   protected:
     long int rows = 0;
     long int columns = 0;
-    m_type** data;
 
   public:
-    Matrix()
-        : data(NULL){};
+    std::vector<std::vector<m_type>> data;
+    Matrix(){
+    };
 
     ~Matrix(){
-        // if (rows !=0) {
-        //     for (long int i = 0; i < rows; i++) {
-        //         delete data[i];
-        //     }
-
-        //     delete data;
-        // }
     };
 
     Matrix(long int rows, long int columns) {
         this->rows = rows;
         this->columns = columns;
 
-        data = new m_type*[rows];
+        data.resize(rows);
         for (long int i = 0; i < rows; i++)
-            data[i] = new m_type[columns];
+            data[i].resize(columns);
     }
 
     Matrix(std::initializer_list<std::initializer_list<m_type>> list) {
         this->columns = (long int) (list.begin())->size();
-        ;
         this->rows = (long int) list.size();
 
-        data = new m_type*[rows];
+        data.resize(rows);
 
         for (long int i = 0; i < rows; i++) {
-            data[i] = new m_type[columns];
+            data[i].resize(columns);
             for (long int j = 0; j < columns; j++) {
                 data[i][j] = ((list.begin() + i)->begin())[j];
             }
@@ -67,10 +61,10 @@ template<class m_type> class Matrix {
     }
 
     m_type* operator[](long int row) {
-        return data[row];
+        return data[row].data();
     }
 
-    Matrix<m_type> operator+(Matrix<m_type>& A) {
+    Matrix<m_type> operator+(Matrix<m_type> A) {
         if (this->rows != A.numrows() || this->columns != A.numcols()) {
             std::out_of_range e("The dimensions of the matrix do not match, while addition. Aborting.");
             throw e;
@@ -86,7 +80,7 @@ template<class m_type> class Matrix {
         return result;
     }
 
-    Matrix<m_type> operator-(Matrix<m_type>& A) {
+    Matrix<m_type> operator-(Matrix<m_type> A) {
         if (this->rows != A.numrows() || this->columns != A.numcols()) {
             std::out_of_range e("The dimensions of the matrix do not match, while subtraction. Aborting.");
             throw e;
@@ -102,7 +96,7 @@ template<class m_type> class Matrix {
         return result;
     }
 
-    Matrix<m_type> operator*(Matrix<m_type>& A) {
+    Matrix<m_type> operator*(Matrix<m_type> A) {
         if (this->columns != A.numrows()) {
             std::invalid_argument e("The dimensions of the matrix do not match, while multiplication. Aborting.");
             throw e;
@@ -122,50 +116,54 @@ template<class m_type> class Matrix {
         return result;
     }
 
-    Matrix<m_type> operator/(Matrix<m_type>& A) {
-        return (*this) * (A.inverse());
+    Matrix<m_type> operator/(Matrix<m_type> A) {
+        return (A.gjinverse()*(*this));
     }
 
     void operator=(Matrix<m_type> A) {
-        if (rows != 0) {
-            for (long int i = 0; i < rows; i++) {
-                delete[] data[i];
-            }
-
-            delete[] data;
-        }
-
         rows = A.numrows();
         columns = A.numcols();
 
-        data = new m_type*[rows];
+        data.resize(rows);
 
         for (long int i = 0; i < rows; i++) {
-            data[i] = new m_type[columns];
+            data[i].resize(columns);
             for (long int j = 0; j < columns; j++) {
                 data[i][j] = A[i][j];
             }
         }
     }
 
-    Matrix<m_type> transpose() {
-        Matrix<m_type> result(columns, rows);
+    Matrix<m_type> operator-() {
+        Matrix<m_type> result(rows, columns);
 
-        for (int i = 0; i < columns; i++) {
-            for (int j = 0; j < rows; j++) {
-                result[i][j] = data[j][i];
+        for (long int i = 0; i < rows; i++) {
+            for (long int j = 0; j < columns; j++) {
+                result[i][j] = data[i][j] * -1;
+            }
+        }
+
+        return result;        
+    }
+
+    Matrix<m_type> operator*(m_type scalar) {
+        Matrix<m_type> result(rows, columns);
+
+        for (long int i = 0; i < rows; i++) {
+            for (long int j = 0; j < columns; j++) {
+                result[i][j] = data[i][j] * scalar;
             }
         }
 
         return result;
     }
 
-    Matrix<m_type> operator*(m_type scalar) {
-        Matrix<m_type> result(rows, columns);
-
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < columns; j++) {
-                result[i][j] = data[i][j] * scalar;
+    Matrix<m_type> transpose() {
+        Matrix<m_type> result(columns, rows);
+        
+        for (long int i = 0; i < columns; i++) {
+            for (long int j = 0; j < rows; j++) {
+                result[i][j] = data[j][i];
             }
         }
 
@@ -174,8 +172,8 @@ template<class m_type> class Matrix {
 
     static Matrix<m_type> identity(long int numrows) {
         Matrix<m_type> result(numrows, numrows);
-        for (int i = 0; i < numrows; i++) {
-            for (int j = 0; j < numrows; j++) {
+        for (long int i = 0; i < numrows; i++) {
+            for (long int j = 0; j < numrows; j++) {
                 result[i][j] = (i == j) ? 1 : 0;
             }
         }
@@ -218,8 +216,8 @@ template<class m_type> class Matrix {
             }
         }
 
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < rows; j++) {
+        for (long int i = 0; i < rows; i++) {
+            for (long int j = 0; j < rows; j++) {
                 result[i][j] /= copy[i][i];
             }
         }
