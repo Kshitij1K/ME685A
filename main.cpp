@@ -23,6 +23,11 @@ Matrix<double> derivfunc(Vector<double> Q) {
     return J;
 }
 
+bool converge(Vector<double> inp) {
+    double norm = inp.norm();
+    return fabs(norm) < 0.001;
+}
+
 int main() {
     Matrix<double> M = {{2,0,0}, {0, -2, 0}, {0, 0, 1}};
     // double result = M.det();
@@ -47,12 +52,12 @@ int main() {
     // result2.print();
     // std::cout << result << std::endl;
     Vector<double> initial = {0.25, 0.5};
-    Vector<double> converge = {0.001, 0.001};
+    // Vector<double> converge = {0.001, 0.001};
     NR<Vector<double>, Matrix<double>> pipeflow(&func, &derivfunc);
 
-    pipeflow.setConvergence(converge);
+    pipeflow.setConvergence(&converge);
     // initial.print();
-    pipeflow.root(initial);
+    pipeflow.root(initial).print();
     // derivfunc(initial);
     return 0;
 }
