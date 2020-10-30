@@ -1,3 +1,5 @@
+#pragma once
+
 #include <unistd.h>
 template<class f_typ, class d_type> class NR {
   protected:
